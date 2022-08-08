@@ -1,13 +1,17 @@
 package com.example.poc2
 
 import android.os.Bundle
-import android.view.View
-import android.widget.TextView
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.koushikdutta.async.AsyncServer.LOGTAG
+import com.samsung.multiscreen.Client
+import com.samsung.multiscreen.Error
+import com.samsung.multiscreen.Result
 import com.samsung.multiscreen.Service
+
 
 class SamsungActivity : AppCompatActivity() {
 
@@ -15,6 +19,7 @@ class SamsungActivity : AppCompatActivity() {
     private val adapter = TVsAdapter(this, ::onClick)
     private val appId = "BFKjejAbbY.GlobosatPlay"
     private val channelId = "com.globo.globoid.auth"
+    private val event = "auth"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,6 +50,27 @@ class SamsungActivity : AppCompatActivity() {
         val tvApplication = service.createApplication(appId, channelId)
         tvApplication.setOnConnectListener { client ->
             Toast.makeText(this, "Conectado a $client", Toast.LENGTH_SHORT).show()
+        }
+        tvApplication.connect(object : Result<Client?> {
+            override fun onSuccess(client: Client?) {
+                Toast.makeText(this@SamsungActivity, "Conectado a $client", Toast.LENGTH_SHORT).show()
+            }
+
+            override fun onError(error: Error) {
+                Toast.makeText(this@SamsungActivity, "Application.connect onError() $error", Toast.LENGTH_SHORT).show()
+                if (error.code == 404L) {
+                }
+            }
+        })
+        tvApplication.addOnMessageListener(
+            event
+        ) { message ->
+            Toast.makeText(this@SamsungActivity, "Mensagem recebida $message", Toast.LENGTH_SHORT).show()
+
+            Log.d(
+                LOGTAG,
+                "Application.onMessage() message: $message"
+            )
         }
     }
 }
